@@ -87,7 +87,7 @@ def main():
             )
         if "backbone" in k:
             state[k.replace("backbone.", "")] = state[k]
-        del state[k]
+        del state[k] 
     backbone.load_state_dict(state, strict=False)
     logging.info(f"Loaded {ckpt_path}")
 

@@ -23,7 +23,7 @@ CUDA_VISIBLE_DEVICES=$1 python3 main_pretrain_CL.py \
     --gaussian_prob 0 0 \
     --num_crops_per_aug 1 1 \
     --crop_size 32 \
-    --name simclr_finetune \
+    --name simclr_multitask \
     --project 855-CIFAR \
     --entity zacks \
     --wandb \

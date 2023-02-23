@@ -26,7 +26,8 @@ import torch.nn as nn
 import torch.nn.functional as F
 from solo.losses.simsiam import simsiam_loss_func
 from solo.methods.base import BaseMethod
-
+from solo.utils.buffer import Buffer
+import numpy as np
 
 class SimSiam(BaseMethod):
     def __init__(
@@ -66,7 +67,8 @@ class SimSiam(BaseMethod):
             nn.ReLU(),
             nn.Linear(pred_hidden_dim, proj_output_dim),
         )
-        # self.automatic_optimization = False
+        if self.LUMP:
+            self.lump_buffer = Buffer(self.buffer_size, self.device)
 
     @staticmethod
     def add_model_specific_args(parent_parser: argparse.ArgumentParser) -> argparse.ArgumentParser:
@@ -134,6 +136,15 @@ class SimSiam(BaseMethod):
         """
         # opt = self.optimizers()
         # opt.zero_grad()
+        if self.LUMP:
+            if not self.lump_buffer.is_empty():
+                buf_inputs, buf_inputs1 = self.lump_buffer.get_data(
+                    self.batch_size, transform=self.transform)
+                lam = np.random.beta(0.1, 0.1)
+                mixed_x = lam * batch[1][0].to(self.device) + (1 - lam) * buf_inputs[:batch[1][0].shape[0]].to(self.device)
+                mixed_x_aug = lam * batch[1][1].to(self.device) + (1 - lam) * buf_inputs1[:batch[1][1].shape[0]].to(self.device)
+                batch[1][0] = mixed_x
+                batch[1][1] = mixed_x_aug
 
         out = super().training_step(batch, batch_idx)
         loss = out["loss"]
@@ -157,6 +168,10 @@ class SimSiam(BaseMethod):
             if self.CUCL_for_Loss:
                 p1 = out["Z_Feat"][0]
                 p2 = out["Z_Feat"][1]
+        
+        
+        if self.LUMP:
+            self.lump_buffer.add_data(examples=batch[1][-1], logits=batch[1][1])
 
         # ------- negative cosine similarity loss -------
         neg_cos_sim = simsiam_loss_func(p1, z2) / 2 + simsiam_loss_func(p2, z1) / 2

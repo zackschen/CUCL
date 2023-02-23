@@ -22,8 +22,8 @@ CUDA_VISIBLE_DEVICES=$1 python3 main_pretrain_CL.py \
     --gaussian_prob 0 0 \
     --num_crops_per_aug 1 1 \
     --crop_size 32 \
-    --name mocov2plus_CUCLp20 \
-    --project CUCL_Cifar_New \
+    --name mocov2plus_CUCL \
+    --project CUCL_Experiment \
     --entity zacks \
     --wandb \
     --method mocov2plus \
@@ -37,7 +37,6 @@ CUDA_VISIBLE_DEVICES=$1 python3 main_pretrain_CL.py \
     --temperature 0.2 \
     --base_tau_momentum 0.99 \
     --final_tau_momentum 0.999 \
-    --momentum_classifier \
     --CUCL \
     --buffer_size $2 \
     --N_books 8 \
@@ -46,10 +45,11 @@ CUDA_VISIBLE_DEVICES=$1 python3 main_pretrain_CL.py \
     --sample_type Old \
     --CUCL_lr 0.03  \
     --CUCL_lambda 1.0 \
-    --train_task 1 \
+    # --train_task 1 \
     # --train_from_task 3 \
     # --CUCL_loadPath ./checkpoints/cifar100_results/mocov2plus_CUCLp-1gvz5abu \
     # --train_task 1 \
     # --offline \
     # --save_checkpoint \
     # --auto_resume \
+    # --momentum_classifier \

@@ -27,7 +27,7 @@ from random import random
 import numpy as np
 from tqdm import tqdm
 from torch.utils.data import DataLoader, Dataset
-import torch
+import torch,copy
 import torchvision
 from pytorch_lightning import Trainer, seed_everything
 from pytorch_lightning.callbacks import LearningRateMonitor
@@ -137,7 +137,9 @@ def main():
             [prepare_transform(args.dataset, **kwargs) for kwargs in transform_kwargs],
             num_crops_per_aug=args.num_crops_per_aug,
         )
-
+        transform_mixup = copy.deepcopy(transform.transforms[0].transform.transform.transforms)
+        transform_mixup.insert(0,torchvision.transforms.ToPILImage())
+        model.transform = torchvision.transforms.Compose(transform_mixup)
         if args.debug_augmentations:
             print("Transforms:")
             pprint(transform)
@@ -212,7 +214,7 @@ def main():
             break
         model.train()
         trainer = Trainer.from_argparse_args(
-            args,
+            args, 
             logger=wandb_logger if args.wandb else None,
             callbacks=callbacks,
             enable_checkpointing=False,

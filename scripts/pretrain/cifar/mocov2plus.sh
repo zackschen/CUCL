@@ -23,7 +23,7 @@ CUDA_VISIBLE_DEVICES=$1 python3 main_pretrain_CL.py \
     --num_crops_per_aug 1 1 \
     --crop_size 32 \
     --name mocov2plus_finetune \
-    --project CUCL_Cifar_New \
+    --project CUCL_Experiment \
     --entity zacks \
     --wandb \
     --method mocov2plus \
@@ -37,5 +37,5 @@ CUDA_VISIBLE_DEVICES=$1 python3 main_pretrain_CL.py \
     --temperature 0.2 \
     --base_tau_momentum 0.99 \
     --final_tau_momentum 0.999 \
-    --momentum_classifier \
-    --train_task 1 \
+    # --momentum_classifier \
+    # --train_task 1 \

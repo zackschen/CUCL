@@ -405,6 +405,9 @@ class BaseMethod(pl.LightningModule):
             )
         # CUCL
         self.CUCL = self.extra_args["CUCL"]
+        self.LUMP = self.extra_args["LUMP"]
+        if self.CUCL or self.LUMP:
+            self.buffer_size = self.extra_args["buffer_size"]
         if self.CUCL:
             tau_cqc = 0.5
             tau_q = 5
@@ -412,7 +415,6 @@ class BaseMethod(pl.LightningModule):
             self.N_words = self.extra_args["N_words"]
             self.L_word = self.extra_args["L_word"]
             self.cqc_criterion = CQCLoss(self.batch_size, tau_cqc)
-            self.buffer_size = self.extra_args["buffer_size"]
             self.CUCL_lr = self.extra_args["CUCL_lr"]
             self.sample_type = self.extra_args["sample_type"]
             self.CUCL_cosine = self.extra_args["CUCL_cosine"]
@@ -642,6 +644,7 @@ class BaseMethod(pl.LightningModule):
         parser.add_argument("--CUCL_lambda", type=float, default=1.0)
         parser.add_argument("--CUCL_epoch", type=int, default=1)
         parser.add_argument("--CUCL_loadPath", type=str, default='')
+        parser.add_argument("--LUMP", action="store_true")
 
         return parent_parser
 

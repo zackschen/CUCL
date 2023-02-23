@@ -204,7 +204,12 @@ class MoCoV2Plus(BaseMomentumMethod):
                 final_q2 = torch.cat((q2,memory_q2),dim=0).contiguous()
                 final_k1 = torch.cat((k1,memory_k1),dim=0).contiguous()
                 final_k2 = torch.cat((k2,memory_k2),dim=0).contiguous()
-            loss += self.CUCL_lambda*out["quanti_loss"] + out["sample_loss"] + out["cosine_loss"]
+
+                # final_q1 = torch.cat((q1,memory_q1),dim=0).contiguous()
+                # final_q2 = torch.cat((q2,memory_q2),dim=0).contiguous()
+                # final_k1 = torch.cat((k1,memory_k1),dim=0).contiguous()
+                # final_k2 = torch.cat((k2,memory_k2),dim=0).contiguous()
+            loss += self.CUCL_lambda*out["quanti_loss"] + out["sample_loss"]
             
         queue = self.queue.clone().detach()
         nce_loss = (
@@ -214,7 +219,7 @@ class MoCoV2Plus(BaseMomentumMethod):
         loss += nce_loss
 
         # ------- update queue -------
-        keys = torch.stack((gather(k1), gather(k2)))
+        keys = torch.stack((gather(final_k1), gather(final_k2)))
         self._dequeue_and_enqueue(keys)
         metrics.update({"train_nce_loss": nce_loss})
         self.log_dict(metrics, on_epoch=True, sync_dist=True)

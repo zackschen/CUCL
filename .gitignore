@@ -8,6 +8,8 @@ wandb*/
 code_images/
 tsne_codebook/
 checkpoints/
+checkpoints
+wandb
 
 # umap dir
 auto_umap/

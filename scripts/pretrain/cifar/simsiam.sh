@@ -4,7 +4,7 @@ CUDA_VISIBLE_DEVICES=$1 python3 main_pretrain_CL.py \
     --train_data_path /home/chencheng/Code/CUCL/Data/CIFAR100/ \
     --val_data_path /home/chencheng/Code/CUCL/Data/CIFAR100/ \
     --max_epochs 200 \
-    --Task 5 \
+    --Task 10 \
     --devices 0 \
     --accelerator gpu \
     --optimizer lars \
@@ -22,8 +22,8 @@ CUDA_VISIBLE_DEVICES=$1 python3 main_pretrain_CL.py \
     --gaussian_prob 0 0 \
     --num_crops_per_aug 1 1 \
     --crop_size 32 \
-    --name simsiam_finetune_5task \
-    --project 855-CIFAR \
+    --name simsiam_multitask1 \
+    --project CIFAR \
     --entity zacks \
     --method simsiam \
     --knn_k 100 \
