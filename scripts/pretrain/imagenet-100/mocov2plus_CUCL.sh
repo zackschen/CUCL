@@ -1,8 +1,8 @@
 CUDA_VISIBLE_DEVICES=3 python3 main_pretrain_CL.py \
     --dataset tinyimagenet \
     --backbone resnet18 \
-    --train_data_path /home/chencheng/Code/CUCL/Data/Tinyimagenet/ \
-    --val_data_path /home/chencheng/Code/CUCL/Data/Tinyimagenet/ \
+    --train_data_path /mnt/hdd1/chencheng/cl_dataset/Tinyimagenet/ \
+    --val_data_path /mnt/hdd1/chencheng/cl_dataset/Tinyimagenet/ \
     --max_epochs 200 \
     --Task 10 \
     --devices 0 \

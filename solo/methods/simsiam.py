@@ -28,6 +28,7 @@ from solo.losses.simsiam import simsiam_loss_func
 from solo.methods.base import BaseMethod
 from solo.utils.buffer import Buffer
 import numpy as np
+from solo.utils.knn import WeightedKNNClassifier
 
 class SimSiam(BaseMethod):
     def __init__(
@@ -47,7 +48,7 @@ class SimSiam(BaseMethod):
         
         kwargs["proj_output_dim"] = proj_output_dim
         super().__init__(**kwargs)
-
+        self.as_backbone = False
         # projector
         self.projector = nn.Sequential(
             nn.Linear(self.features_dim, proj_hidden_dim, bias=False),
@@ -67,8 +68,10 @@ class SimSiam(BaseMethod):
             nn.ReLU(),
             nn.Linear(pred_hidden_dim, proj_output_dim),
         )
+        # self.knn = WeightedKNNClassifier(k=kwargs['knn_k'], distance_fx=kwargs['knn_distance_function'])
+
         if self.LUMP:
-            self.lump_buffer = Buffer(self.buffer_size, self.device)
+            self.lump_buffer = Buffer(self.LUMP_size, self.device)
 
     @staticmethod
     def add_model_specific_args(parent_parser: argparse.ArgumentParser) -> argparse.ArgumentParser:
@@ -78,7 +81,6 @@ class SimSiam(BaseMethod):
         # projector
         parser.add_argument("--proj_output_dim", type=int, default=128)
         parser.add_argument("--proj_hidden_dim", type=int, default=2048)
-
         # predictor
         parser.add_argument("--pred_hidden_dim", type=int, default=512)
         return parent_parser
@@ -140,7 +142,7 @@ class SimSiam(BaseMethod):
             if not self.lump_buffer.is_empty():
                 buf_inputs, buf_inputs1 = self.lump_buffer.get_data(
                     self.batch_size, transform=self.transform)
-                lam = np.random.beta(0.1, 0.1)
+                lam = np.random.beta(self.LUMP_lambda, self.LUMP_lambda)
                 mixed_x = lam * batch[1][0].to(self.device) + (1 - lam) * buf_inputs[:batch[1][0].shape[0]].to(self.device)
                 mixed_x_aug = lam * batch[1][1].to(self.device) + (1 - lam) * buf_inputs1[:batch[1][1].shape[0]].to(self.device)
                 batch[1][0] = mixed_x
@@ -178,7 +180,72 @@ class SimSiam(BaseMethod):
         loss += neg_cos_sim
 
         metrics.update({"train_neg_cos_sim": neg_cos_sim,})
-        self.log_dict(metrics, on_epoch=True, sync_dist=True)
+        if not self.as_backbone:
+            self.log_dict(metrics, on_epoch=True, sync_dist=True)
+
+        # if not self.trainer.sanity_checking:
+        #     targets = batch[-1].repeat(self.num_large_crops)
+        #     mask = targets != -1
+        #     self.knn(
+        #         train_features=torch.cat(out["feats"][: self.num_large_crops])[mask].detach(),
+        #         train_targets=targets[mask],
+        #     )
 
         return loss
+
+    def base_validation_step(self, X: torch.Tensor, targets: torch.Tensor) -> Dict:
+        """Allows user to re-write how the forward step behaves for the validation_step.
+        Should always return a dict containing, at least, "loss", "acc1" and "acc5".
+        Defaults to _base_shared_step
+        Args:
+            X (torch.Tensor): batch of images in tensor format.
+            targets (torch.Tensor): batch of labels for X.
+        Returns:
+            Dict: dict containing the classification loss, logits, features, acc@1 and acc@5.
+        """
+
+        return self._base_shared_step(X, targets)
+
+    def validation_step(
+        self, batch: List[torch.Tensor], batch_idx: int, dataloader_idx: int = None
+    ) -> Dict[str, Any]:
+        """Validation step for pytorch lightning. It does all the shared operations, such as
+        forwarding a batch of images, computing logits and computing metrics.
+        Args:
+            batch (List[torch.Tensor]):a batch of data in the format of [img_indexes, X, Y].
+            batch_idx (int): index of the batch.
+        Returns:
+            Dict[str, Any]: dict with the batch_size (used for averaging), the classification loss
+                and accuracies.
+        """
+
+        X, targets = batch
+        batch_size = targets.size(0)
+
+        out = self.base_validation_step(X, targets)
+
+        if not self.trainer.sanity_checking:
+            self.knn(test_features=out.pop("feats").detach(), test_targets=targets.detach())
+
+        metrics = {
+            "batch_size": batch_size,
+            "val_loss": out["loss"],
+            "val_acc1": out["acc1"],
+        }
+        return metrics
+
+    def validation_epoch_end(self, outs: List[Dict[str, Any]]):
+        """Averages the losses and accuracies of all the validation batches.
+        This is needed because the last batch can be smaller than the others,
+        slightly skewing the metrics.
+        Args:
+            outs (List[Dict[str, Any]]): list of outputs of the validation step.
+        """
+
+        log = {}
+        if not self.trainer.sanity_checking:
+            val_knn_acc1, val_knn_acc5 = self.knn.compute()
+            log.update({"val_knn_acc1": val_knn_acc1, "val_knn_acc5": val_knn_acc5})
+
+        self.log_dict(log, sync_dist=True)
 

@@ -37,6 +37,11 @@ from solo.methods.swav import SwAV
 from solo.methods.vibcreg import VIbCReg
 from solo.methods.vicreg import VICReg
 from solo.methods.wmse import WMSE
+from solo.methods.agem import AGem
+from solo.methods.si import SI
+from solo.methods.gss import GSS
+from solo.methods.der import DER
+from solo.methods.super_finetune import su_Finetune
 
 METHODS = {
     # base classes
@@ -61,6 +66,11 @@ METHODS = {
     "vibcreg": VIbCReg,
     "vicreg": VICReg,
     "wmse": WMSE,
+    "agem": AGem,
+    "si": SI,
+    "gss": GSS,
+    "der": DER,
+    "su_Finetune": su_Finetune,
 }
 __all__ = [
     "BarlowTwins",
@@ -83,4 +93,9 @@ __all__ = [
     "VIbCReg",
     "VICReg",
     "WMSE",
+    "AGem",
+    "SI",
+    "GSS",
+    "DER",
+    "su_Finetune",
 ]

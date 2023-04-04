@@ -24,7 +24,8 @@ import torch
 import torch.nn as nn
 from solo.losses.barlow import barlow_loss_func
 from solo.methods.base import BaseMethod
-
+from solo.utils.buffer import Buffer
+import numpy as np
 
 class BarlowTwins(BaseMethod):
     def __init__(
@@ -40,7 +41,7 @@ class BarlowTwins(BaseMethod):
         """
         kwargs["proj_output_dim"] = proj_output_dim
         super().__init__(**kwargs)
-
+        self.as_backbone = False
         self.lamb = lamb
         self.scale_loss = scale_loss
 
@@ -54,6 +55,8 @@ class BarlowTwins(BaseMethod):
             nn.ReLU(),
             nn.Linear(proj_hidden_dim, proj_output_dim),
         )
+        if self.LUMP:
+            self.lump_buffer = Buffer(self.buffer_size, self.device)
 
     @staticmethod
     def add_model_specific_args(parent_parser: argparse.ArgumentParser) -> argparse.ArgumentParser:
@@ -113,6 +116,15 @@ class BarlowTwins(BaseMethod):
         Returns:
             torch.Tensor: total loss composed of Barlow loss and classification loss.
         """
+        if self.LUMP:
+            if not self.lump_buffer.is_empty():
+                buf_inputs, buf_inputs1 = self.lump_buffer.get_data(
+                    self.batch_size, transform=self.transform)
+                lam = np.random.beta(self.LUMP_lambda, self.LUMP_lambda)
+                mixed_x = lam * batch[1][0].to(self.device) + (1 - lam) * buf_inputs[:batch[1][0].shape[0]].to(self.device)
+                mixed_x_aug = lam * batch[1][1].to(self.device) + (1 - lam) * buf_inputs1[:batch[1][1].shape[0]].to(self.device)
+                batch[1][0] = mixed_x
+                batch[1][1] = mixed_x_aug
 
         out = super().training_step(batch, batch_idx)
         loss = out["loss"]
@@ -136,9 +148,13 @@ class BarlowTwins(BaseMethod):
                 # z1 = out["Z_Feat"][0]
                 z2 = out["Z_Feat"][1]
 
+        if self.LUMP:
+            self.lump_buffer.add_data(examples=batch[1][-1], logits=batch[1][1])
+
         barlow_loss = barlow_loss_func(z1, z2, lamb=self.lamb, scale_loss=self.scale_loss)
         loss += barlow_loss
         metrics.update({"train_barlow_loss": barlow_loss,})
-        self.log_dict(metrics, on_epoch=True, sync_dist=True)
+        if not self.as_backbone:
+            self.log_dict(metrics, on_epoch=True, sync_dist=True)
 
         return loss

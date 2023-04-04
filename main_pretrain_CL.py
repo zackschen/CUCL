@@ -255,17 +255,46 @@ def main():
                 train_dataset.imgs = np.array(train_dataset.imgs)[train_mask]
             else:
                 train_dataset.data = np.array(train_dataset.data)[train_mask]
-                train_dataset.targets = np.array(train_dataset.targets)[train_mask] - order*class_per_task
+                train_dataset.targets = np.array(train_dataset.targets)[train_mask]
             train_loader = prepare_dataloader(train_dataset, batch_size=args.batch_size, num_workers=args.num_workers)
+
+            # _, T = prepare_transforms_classification(args.dataset)
+            # _, val_dataset = prepare_datasets_classification(
+            #     args.dataset,
+            #     T_train=T,
+            #     T_val=T,
+            #     train_data_path=args.train_data_path,
+            #     val_data_path=args.val_data_path,
+            #     data_format=args.data_format,
+            # )
+            # test_mask = np.logical_and(np.array(val_dataset.targets) >= order*class_per_task,
+            # np.array(val_dataset.targets) < (order+1)*class_per_task)
+            # if args.dataset == 'imagenet100':
+            #     val_dataset.samples = np.array(val_dataset.samples)[test_mask]
+            #     val_dataset.imgs = np.array(val_dataset.imgs)[test_mask]
+            #     val_dataset.targets = np.array(val_dataset.targets)[test_mask]
+            # else:
+            #     val_dataset.data = np.array(val_dataset.data)[test_mask]
+            #     val_dataset.targets = np.array(val_dataset.targets)[test_mask]
+
+            # val_loader = DataLoader(val_dataset, batch_size=args.batch_size, shuffle=False, num_workers=args.num_workers, pin_memory=True,drop_last=False,)
 
             if train:
                 print(f'Training on task {i} samples {order}')
+                model.train_loader = train_loader
+                model.train_dataset = train_dataset
                 trainer.fit(model, train_loader, ckpt_path=ckpt_path)
             else:
                 trainer.train_dataloader = train_loader
                 model.trainer = trainer
 
-        test_model(args, model, i, sample_orders[:i+1], class_per_task, acc_matrix, wandb_logger)
+        if args.method in ['agem','gss','su_Finetune']:
+            evaluate(args, model, i, sample_orders[:i+1], class_per_task, acc_matrix, wandb_logger)
+        else:
+            if args.method in ['si','der'] and args.supervised:
+                evaluate(args, model, i, sample_orders[:i+1], class_per_task, acc_matrix, wandb_logger)
+            else:
+                test_model(args, model, i, sample_orders[:i+1], class_per_task, acc_matrix, wandb_logger)
         if model.CUCL:
             if not args.data_format == "dali":
                 calculate_Codeword(args, model, train_loader, i)
@@ -295,6 +324,7 @@ def test_model(args,model,task_id, sample_orders,N_CLASSES_PER_TASK, acc_matrix,
             val_data_path=args.val_data_path,
             data_format=args.data_format,
         )
+        
         order = sample_orders[i]
         train_mask = np.logical_and(np.array(train_dataset.targets) >= order*N_CLASSES_PER_TASK,
         np.array(train_dataset.targets) < (order+1)*N_CLASSES_PER_TASK)
@@ -351,6 +381,75 @@ def test_model(args,model,task_id, sample_orders,N_CLASSES_PER_TASK, acc_matrix,
             distance_fx=distance_fx,
         )
         print(f"Task: {i} Result: acc@1={acc1}, acc@5={acc5}")
+        acc_matrix[task_id,i] = acc1
+    
+    print(f'Task:{task_id} Accuracies =')
+    average = []
+    for i_a in range(task_id+1):
+        print('\t',end='')
+        for j_a in range(acc_matrix.shape[1]):
+            print('{:5.1f}% '.format(acc_matrix[i_a,j_a]),end='')
+        print()
+        average.append(acc_matrix[i_a][:i_a+1].mean())
+    print ('Final Avg Accuracy: {:5.2f}%'.format(acc_matrix[task_id].mean()))
+    bwt=np.mean((acc_matrix[-1]-np.diag(acc_matrix))[:-1]) 
+    print ('Backward transfer: {:5.2f}%'.format(bwt))
+    print ('Mean Avg Accuracy: {:5.2f}%'.format(np.mean(average)))
+    wandb_logger.log_table("AA"+str(task_id), columns=[("Task" + str(i)) for i in range(model.task_num)], data=acc_matrix)
+
+@torch.no_grad()
+def evaluate(args,model,task_id, sample_orders,N_CLASSES_PER_TASK, acc_matrix, wandb_logger):
+    model.eval()
+    model = model.cuda()
+    for i in range(task_id+1):
+        _, T = prepare_transforms_classification(args.dataset)
+        train_dataset, val_dataset = prepare_datasets_classification(
+            args.dataset,
+            T_train=T,
+            T_val=T,
+            train_data_path=args.train_data_path,
+            val_data_path=args.val_data_path,
+            data_format=args.data_format,
+        )
+        order = sample_orders[i]
+        train_mask = np.logical_and(np.array(train_dataset.targets) >= order*N_CLASSES_PER_TASK,
+        np.array(train_dataset.targets) < (order+1)*N_CLASSES_PER_TASK)
+        if args.dataset == 'imagenet100':
+            train_dataset.samples = np.array(train_dataset.samples)[train_mask]
+            train_dataset.imgs = np.array(train_dataset.imgs)[train_mask]
+            train_dataset.targets = np.array(train_dataset.targets)[train_mask] - order*N_CLASSES_PER_TASK
+        else:
+            train_dataset.data = np.array(train_dataset.data)[train_mask]
+            train_dataset.targets = np.array(train_dataset.targets)[train_mask] - order*N_CLASSES_PER_TASK
+
+        test_mask = np.logical_and(np.array(val_dataset.targets) >= order*N_CLASSES_PER_TASK,
+        np.array(val_dataset.targets) < (order+1)*N_CLASSES_PER_TASK)
+        if args.dataset == 'imagenet100':
+            val_dataset.samples = np.array(val_dataset.samples)[test_mask]
+            val_dataset.imgs = np.array(val_dataset.imgs)[test_mask]
+            val_dataset.targets = np.array(val_dataset.targets)[test_mask] - order*N_CLASSES_PER_TASK
+        else:
+            val_dataset.data = np.array(val_dataset.data)[test_mask]
+            val_dataset.targets = np.array(val_dataset.targets)[test_mask] - order*N_CLASSES_PER_TASK
+
+        train_loader = DataLoader(train_dataset, batch_size=args.batch_size, shuffle=False, num_workers=args.num_workers, pin_memory=True,drop_last=False,)
+        val_loader = DataLoader(val_dataset, batch_size=args.batch_size, shuffle=False, num_workers=args.num_workers, pin_memory=True,drop_last=False,)
+
+        correct, correct_mask_classes, total = 0.0, 0.0, 0.0
+        for data in val_loader:
+            inputs, labels = data
+            inputs, labels = inputs.cuda(), labels.cuda()
+            if args.multitask:
+                outputs = model.eval_forward(inputs)
+            else:
+                outputs = model.eval_forward(inputs)[order]
+
+            _, pred = torch.max(outputs.data, 1)
+            correct += torch.sum(pred == labels).item()
+            total += labels.shape[0]
+        
+        acc1 = correct / total * 100
+        print(f"Task: {i} Result: acc@1={acc1}")
         acc_matrix[task_id,i] = acc1
     
     print(f'Task:{task_id} Accuracies =')

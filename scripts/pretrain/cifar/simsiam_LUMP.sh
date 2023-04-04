@@ -1,8 +1,8 @@
 CUDA_VISIBLE_DEVICES=$1 python3 main_pretrain_CL.py \
     --dataset cifar100 \
     --backbone resnet18 \
-    --train_data_path /home/chencheng/Code/CUCL/Data/CIFAR100/ \
-    --val_data_path /home/chencheng/Code/CUCL/Data/CIFAR100/ \
+    --train_data_path /mnt/hdd1/chencheng/cl_dataset/CIFAR100/ \
+    --val_data_path /mnt/hdd1/chencheng/cl_dataset/CIFAR100/ \
     --max_epochs 200 \
     --Task 10 \
     --devices 0 \
@@ -33,7 +33,8 @@ CUDA_VISIBLE_DEVICES=$1 python3 main_pretrain_CL.py \
     --proj_output_dim 512 \
     --wandb \
     --LUMP \
-    --buffer_size $2 \
+    --LUMP_lambda 0.1 \
+    --LUMP_size 256 \
     # --N_books 8 \
     # --N_words 10 \
     # --L_word 64 \

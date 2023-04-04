@@ -191,7 +191,13 @@ class Quantization_Head(pl.LightningModule):
                     # quant_idx = torch.cat((quant_idx, min_idx), dim=1)
             return Z
 
+class FowardModuleList(nn.ModuleList):
+    def __init__(self):
+        super(FowardModuleList, self).__init__()
 
+    def forward(self, x):
+        output = [module(x) for module in self]
+        return output
 
 class BaseMethod(pl.LightningModule):
     _BACKBONES = {
@@ -393,6 +399,12 @@ class BaseMethod(pl.LightningModule):
         else:
             self.features_dim = self.backbone.num_features
 
+        if method in ['agem','gss','si','der','su_Finetune']:
+            classifiers = FowardModuleList()
+            for i in range(self.task_num):
+                classifiers.append(nn.Linear(self.features_dim, self.class_per_task))
+            self.classifier = classifiers
+
         # self.classifier = nn.Linear(self.features_dim, num_classes)
 
         if self.knn_eval:
@@ -408,6 +420,8 @@ class BaseMethod(pl.LightningModule):
         self.LUMP = self.extra_args["LUMP"]
         if self.CUCL or self.LUMP:
             self.buffer_size = self.extra_args["buffer_size"]
+            self.LUMP_size = self.extra_args["LUMP_size"]
+            self.LUMP_lambda = self.extra_args["LUMP_lambda"]
         if self.CUCL:
             tau_cqc = 0.5
             tau_q = 5
@@ -638,6 +652,7 @@ class BaseMethod(pl.LightningModule):
         parser.add_argument('--N_words', default=16, type=int, help="""The number of the codewords. It should be a power of two.""")
         parser.add_argument('--L_word', default=16, type=int, help="""Dimensionality of the codeword.""")
         parser.add_argument('--buffer_size', default=256, type=int)
+        parser.add_argument('--LUMP_size', default=256, type=int)
         parser.add_argument("--CUCL_lr", type=float, default=0.1)
         parser.add_argument("--sample_type", type=str, default='Old')
         parser.add_argument("--CUCL_cosine", action="store_true")
@@ -645,6 +660,7 @@ class BaseMethod(pl.LightningModule):
         parser.add_argument("--CUCL_epoch", type=int, default=1)
         parser.add_argument("--CUCL_loadPath", type=str, default='')
         parser.add_argument("--LUMP", action="store_true")
+        parser.add_argument("--LUMP_lambda", type=float, default=0.1)
 
         return parent_parser
 
@@ -666,7 +682,6 @@ class BaseMethod(pl.LightningModule):
             #     "weight_decay": 0,
             # },
         ]
-        # return []
 
     def configure_optimizers(self) -> Tuple[List, List]:
         """Collects learnable parameters and configures the optimizer and learning rate scheduler.

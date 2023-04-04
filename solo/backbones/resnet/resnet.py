@@ -17,7 +17,16 @@
 # OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 # DEALINGS IN THE SOFTWARE.
 
+from torchvision.models import resnet
 from torchvision.models import resnet18
 from torchvision.models import resnet50
+import torch
+import torch.nn as nn
+import torch.nn.functional as F
+from torch.nn.functional import relu, avg_pool2d
+from torchvision.models.resnet import conv3x3
+from torchvision.models.resnet import BasicBlock
+from typing import List
+from torch.nn.parameter import Parameter
 
 __all__ = ["resnet18", "resnet50"]

@@ -1,8 +1,8 @@
 CUDA_VISIBLE_DEVICES=$1 python3 main_pretrain_CL.py \
     --dataset cifar100 \
     --backbone resnet18 \
-    --train_data_path /home/chencheng/Code/CUCL/Data/CIFAR100/ \
-    --val_data_path /home/chencheng/Code/CUCL/Data/CIFAR100/ \
+    --train_data_path /mnt/hdd1/chencheng/cl_dataset/CIFAR100/ \
+    --val_data_path /mnt/hdd1/chencheng/cl_dataset/CIFAR100/ \
     --max_epochs 200 \
     --Task 10 \
     --devices 0 \
@@ -22,7 +22,7 @@ CUDA_VISIBLE_DEVICES=$1 python3 main_pretrain_CL.py \
     --gaussian_prob 0 0 \
     --num_crops_per_aug 1 1 \
     --crop_size 32 \
-    --name simsiam_multitask1 \
+    --name simsiam_pretrainedbackbone \
     --project CIFAR \
     --entity zacks \
     --method simsiam \

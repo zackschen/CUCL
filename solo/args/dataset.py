@@ -42,7 +42,7 @@ def dataset_args(parser: ArgumentParser):
     ]
 
     parser.add_argument("--dataset", choices=SUPPORTED_DATASETS, type=str, required=True)
-
+    parser.add_argument("--multitask", action="store_true")
     # dataset path
     parser.add_argument("--train_data_path", type=Path, required=True)
     parser.add_argument("--val_data_path", type=Path, default=None)
