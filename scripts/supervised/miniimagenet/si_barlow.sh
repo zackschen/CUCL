@@ -21,9 +21,10 @@ CUDA_VISIBLE_DEVICES=$1 python3 main_pretrain_CL.py \
     --hue 0.1 \
     --gaussian_prob 0 0 \
     --num_crops_per_aug 1 1 \
-    --crop_size 32 \
+    --crop_size 84 \
     --name si_barlow \
     --unsuper_method Barlow \
+    --scale_loss 0.1 \
     --project CUCL_855_Mini \
     --entity zacks \
     --method si \

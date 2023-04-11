@@ -29,7 +29,7 @@ figure = plt.figure(dpi=300)
 a = figure.add_subplot(111) 
 sns.set_theme(style="ticks")
 ax = plt.gca()
-Task_num = 2
+Task_num = 1
 width = 0.08
 Finetune_Acc = []
 CUCL_Acc = []
@@ -47,17 +47,18 @@ for key,path in Paths.items():
 for i in range(Task_num):
     x = i
     for j in range(len(Finetune_Acc[i])):
-        plt.bar(x,CUCL_Acc[i][j],width=width,color='#0081A7',edgecolor='#264653')
-        plt.bar(x,Finetune_Acc[i][j],width=width,color='#F07167',edgecolor='#264653')
+        plt.bar(j,CUCL_Acc[i][j],color='#0081A7',edgecolor='#264653')
+        plt.bar(j,Finetune_Acc[i][j],color='#F07167',edgecolor='#264653')
         x+=width
 ax = plt.gca()
 ax.set_ybound([40,85])
 a.legend(['Simsiam w/ CUCL','Simsiam w/o CUCL'], loc='lower right')
-xticks = list(range(0,Task_num))
+xticks = list(range(0,10))
 labels = ["Task1","Task2","Task3"]
-xlabels=[labels[x] for x in xticks]
+xlabels=[str(x+1) for x in xticks]
 ax.set_xticks(xticks)
 ax.set_xticklabels(xlabels)
 plt.ylabel('Accuracy (%)')
+plt.xlabel('Train after Task')
 plt.show()
 plt.savefig("./graph/NYG_bar.pdf", bbox_inches='tight',dpi=300)

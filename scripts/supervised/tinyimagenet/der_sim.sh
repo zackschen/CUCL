@@ -21,13 +21,13 @@ CUDA_VISIBLE_DEVICES=$1 python3 main_pretrain_CL.py \
     --hue 0.1 \
     --gaussian_prob 0 0 \
     --num_crops_per_aug 1 1 \
-    --crop_size 32 \
+    --crop_size 64 \
     --name der_sim \
     --unsuper_method SimSiam \
     --project CUCL_855_Tiny \
     --entity zacks \
     --method der \
-    --buffer_size 256 \
+    --der_size 256 \
     --train_alpha 0.01 \
     --knn_k 100 \
     --knn_temperature 0.1 \

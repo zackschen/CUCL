@@ -22,17 +22,26 @@ CUDA_VISIBLE_DEVICES=$1 python3 main_pretrain_CL.py \
     --gaussian_prob 0 0 \
     --num_crops_per_aug 1 1 \
     --crop_size 64 \
-    --name si_sim \
-    --unsuper_method SimSiam \
+    --name der_barlow_CUCL \
+    --unsuper_method Barlow \
     --project CUCL_855_Tiny \
     --entity zacks \
-    --method si \
-    --train_c 0.01 \
+    --method der \
+    --scale_loss 0.1 \
+    --der_size 256 \
+    --train_alpha 0.01 \
     --knn_k 100 \
     --knn_temperature 0.1 \
     --knn_distance_function cosine \
     --knn_feature_type backbone \
     --proj_hidden_dim 2048 \
-    --pred_hidden_dim 512 \
     --proj_output_dim 512 \
+    --CUCL \
+    --buffer_size 20 \
+    --N_books 8 \
+    --N_words 8 \
+    --L_word 16 \
+    --sample_type Old \
+    --CUCL_lr 0.03  \
+    --CUCL_lambda 1.0 \
     --wandb \

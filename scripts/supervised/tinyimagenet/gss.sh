@@ -19,7 +19,7 @@ CUDA_VISIBLE_DEVICES=$1 python3 main_pretrain_CL.py \
     --hue 0.1 \
     --gaussian_prob 0 0 \
     --num_crops_per_aug 1 1 \
-    --crop_size 32 \
+    --crop_size 64 \
     --name gss \
     --project CUCL_855_Tiny \
     --entity zacks \

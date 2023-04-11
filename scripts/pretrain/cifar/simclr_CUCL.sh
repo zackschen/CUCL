@@ -39,7 +39,7 @@ CUDA_VISIBLE_DEVICES=$1 python3 main_pretrain_CL.py \
     --buffer_size $2 \
     --N_books 8 \
     --N_words 8 \
-    --L_word 64 \
+    --L_word 16 \
     --sample_type Old \
     --CUCL_lr 0.03  \
     --CUCL_lambda 1.0 \

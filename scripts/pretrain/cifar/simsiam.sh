@@ -4,7 +4,7 @@ CUDA_VISIBLE_DEVICES=$1 python3 main_pretrain_CL.py \
     --train_data_path /mnt/hdd1/chencheng/cl_dataset/CIFAR100/ \
     --val_data_path /mnt/hdd1/chencheng/cl_dataset/CIFAR100/ \
     --max_epochs 200 \
-    --Task 10 \
+    --Task 5 \
     --devices 0 \
     --accelerator gpu \
     --optimizer lars \
@@ -22,7 +22,7 @@ CUDA_VISIBLE_DEVICES=$1 python3 main_pretrain_CL.py \
     --gaussian_prob 0 0 \
     --num_crops_per_aug 1 1 \
     --crop_size 32 \
-    --name simsiam_pretrainedbackbone \
+    --name simsiam_5_tasks \
     --project CIFAR \
     --entity zacks \
     --method simsiam \
@@ -34,3 +34,4 @@ CUDA_VISIBLE_DEVICES=$1 python3 main_pretrain_CL.py \
     --pred_hidden_dim 512 \
     --proj_output_dim 512 \
     --wandb \
+    # --train_task 1 \

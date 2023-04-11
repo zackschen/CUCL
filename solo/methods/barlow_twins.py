@@ -56,7 +56,7 @@ class BarlowTwins(BaseMethod):
             nn.Linear(proj_hidden_dim, proj_output_dim),
         )
         if self.LUMP:
-            self.lump_buffer = Buffer(self.buffer_size, self.device)
+            self.lump_buffer = Buffer(self.LUMP_size, self.device)
 
     @staticmethod
     def add_model_specific_args(parent_parser: argparse.ArgumentParser) -> argparse.ArgumentParser:

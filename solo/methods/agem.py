@@ -81,6 +81,7 @@ class AGem(BaseMethod):
         self.buffer.add_data(
             examples=aug_1.to(self.device),
             labels=y.to(self.device),
+            task_labels=torch.ones(aug_1.shape[0])*self.curr_task
         )
         return super().on_train_end()
     
@@ -94,7 +95,7 @@ class AGem(BaseMethod):
         _, X, targets = batch
 
         opt.zero_grad()
-        labels = targets.to(self.device)
+        labels = targets.to(self.device) - self.curr_task * self.class_per_task
         p = self.classifier(self.backbone(X[0].to(self.device)))[self.curr_task]
         loss = self.loss(p, labels)
         self.manual_backward(loss)
@@ -103,10 +104,17 @@ class AGem(BaseMethod):
         if not self.buffer.is_empty():
             store_grad(self.parameters, self.grad_xy, self.grad_dims)
 
-            buf_inputs, buf_labels = self.buffer.get_data(self.batch_size, transform=self.transform)
+            buf_inputs, buf_labels, task_labels = self.buffer.get_data(self.batch_size, transform=None)
             opt.zero_grad()
             buf_labels = buf_labels.to(self.device)
-            buf_outputs = self.classifier(self.backbone(buf_inputs.to(self.device)))[self.curr_task]
+            buf_outputs = self.classifier(self.backbone(buf_inputs.to(self.device)))
+            new_outputs = []
+            new_lables = []
+            for i in range(buf_labels.shape[0]):
+                    new_outputs.append(buf_outputs[task_labels[i]][i])
+                    new_lables.append(buf_labels[i]-task_labels[i]*self.class_per_task)
+            buf_outputs = torch.stack(new_outputs)
+            buf_labels = torch.stack(new_lables)
             penalty = self.loss(buf_outputs, buf_labels)
             self.manual_backward(penalty)
             data_dict['penalty'] = penalty

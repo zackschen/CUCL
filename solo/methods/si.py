@@ -177,7 +177,7 @@ class SI(BaseMethod):
         _, X, targets = batch
 
         if self.supervised:
-            labels = targets.to(self.device)
+            labels = targets.to(self.device) - self.curr_task * self.class_per_task
             outputs = self.classifier(self.net.backbone(X[0].to(self.device)))[self.curr_task]
             penalty = self.c * self.penalty()
             loss = self.loss(outputs, labels).mean() + penalty
