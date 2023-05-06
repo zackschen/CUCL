@@ -1,8 +1,8 @@
 CUDA_VISIBLE_DEVICES=$1 python3 main_pretrain_CL.py \
-    --dataset tinyimagenet \
+    --dataset miniimagenet \
     --backbone resnet18 \
-    --train_data_path /mnt/hdd1/|*|/cl_dataset/Tinyimagenet/ \
-    --val_data_path /mnt/hdd1/|*|/cl_dataset/Tinyimagenet/ \
+    --train_data_path /mnt/hdd1/|*|/cl_dataset/mini-imagenet/ \
+    --val_data_path /mnt/hdd1/|*|/cl_dataset/mini-imagenet/ \
     --max_epochs 200 \
     --Task 10 \
     --devices 0 \
@@ -21,9 +21,9 @@ CUDA_VISIBLE_DEVICES=$1 python3 main_pretrain_CL.py \
     --hue 0.1 \
     --gaussian_prob 0 0 \
     --num_crops_per_aug 1 1 \
-    --crop_size 64 \
+    --crop_size 84 \
     --name barlow_LUMP_CUCL \
-    --project CUCL_855_Tiny \
+    --project CUCL_855_Mini \
     --entity zacks \
     --method barlow_twins \
     --scale_loss 0.1 \

@@ -1,15 +1,13 @@
 CUDA_VISIBLE_DEVICES=$1 python3 main_pretrain_CL.py \
-    --dataset tinyimagenet \
+    --dataset miniimagenet \
     --backbone resnet18 \
-    --train_data_path /mnt/hdd1/|*|/cl_dataset/Tinyimagenet/ \
-    --val_data_path /mnt/hdd1/|*|/cl_dataset/Tinyimagenet/ \
+    --train_data_path /mnt/hdd1/|*|/cl_dataset/mini-imagenet/ \
+    --val_data_path /mnt/hdd1/|*|/cl_dataset/mini-imagenet/ \
     --max_epochs 200 \
     --Task 10 \
     --devices 0 \
     --accelerator gpu \
-    --optimizer lars \
-    --eta_lars 0.02 \
-    --exclude_bias_n_norm_lars \
+    --optimizer sgd \
     --scheduler none \
     --lr 0.03 \
     --weight_decay 1e-4 \
@@ -21,17 +19,17 @@ CUDA_VISIBLE_DEVICES=$1 python3 main_pretrain_CL.py \
     --hue 0.1 \
     --gaussian_prob 0 0 \
     --num_crops_per_aug 1 1 \
-    --crop_size 64 \
-    --name barlow_LUMP_CUCL \
-    --project CUCL_855_Tiny \
+    --crop_size 84 \
+    --name simsiam_LUMP_CUCL \
+    --project CUCL_855_Mini \
     --entity zacks \
-    --method barlow_twins \
-    --scale_loss 0.1 \
+    --method simsiam \
     --knn_k 100 \
     --knn_temperature 0.1 \
     --knn_distance_function cosine \
     --knn_feature_type backbone \
     --proj_hidden_dim 2048 \
+    --pred_hidden_dim 512 \
     --proj_output_dim 512 \
     --wandb \
     --LUMP \
@@ -47,14 +45,19 @@ CUDA_VISIBLE_DEVICES=$1 python3 main_pretrain_CL.py \
     --CUCL_lambda 1.0 \
     # --N_books 8 \
     # --N_words 8 \
-    # --L_word 16 \
+    # --L_word 32 \
     # --sample_type Old \
     # --CUCL_lr 0.03  \
     # --CUCL_lambda 1.0 \
+    # --train_task 2 \
     # --load_first \
-    # --CUCL_loadPath ./checkpoints/cifar100_results/Final_barlow_CUCL/0.pth \
-    # --train_task 1 \
-    # --CUCL_cosine \
+    # --CUCL_loadPath ./checkpoints/cifar100_results/Final_simsiam_CUCL/0.pth \
+    # --CUCL_for_Loss \
+    # --CUCL_type projector \
     # --CUCL_epoch 10 \
+    # --CUCL_cosine \
     # --save_checkpoint \
+    # --zero_init_residual \
+    # --offline \
     # --auto_resume \
+    

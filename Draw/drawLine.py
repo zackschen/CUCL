@@ -134,12 +134,12 @@ pylab.show()
 #         '0.9':(103/255.0,191/255.0,92/255.0),\
 #         '1.0':(249/255.0,87/255.0,56/255.0),    }
 
-# Paths = {'0.5':"/home/chencheng/Code/gpm/checkpoints/CIFA100/Final_old5/10tasks_64batch___T_0.5_Global_0.0_local_1.0_lr_0.04_weak_False_Memory_False_Temp_0.5_Supcon_0.1/log.txt",
-# '0.6':"/home/chencheng/Code/gpm/checkpoints/CIFA100/Final_old5/10tasks_64batch___T_0.6_Global_0.0_local_1.0_lr_0.04_weak_False_Memory_False_Temp_0.5_Supcon_0.1/log.txt",
-# '0.7':"/home/chencheng/Code/gpm/checkpoints/CIFA100/Final_old5/10tasks_64batch___T_0.7_Global_0.0_local_1.0_lr_0.04_weak_False_Memory_False_Temp_0.5_Supcon_0.1/log.txt",
-# '0.8':"/home/chencheng/Code/gpm/checkpoints/CIFA100/Final_old5/10tasks_64batch___T_0.8_Global_0.0_local_1.0_lr_0.04_weak_False_Memory_False_Temp_0.5_Supcon_0.1/log.txt",
-# '0.9':"/home/chencheng/Code/gpm/checkpoints/CIFA100/Final_old5/10tasks_64batch___T_0.9_Global_0.0_local_1.0_lr_0.04_weak_False_Memory_False_Temp_0.5_Supcon_0.1/log.txt",
-# '1.0':"/home/chencheng/Code/gpm/checkpoints/CIFA100/Final_old5/10tasks_64batch___T_1.0_Global_0.0_local_1.0_lr_0.04_weak_False_Memory_False_Temp_0.5_Supcon_0.1/log.txt"}
+# Paths = {'0.5':"/home/|*|/Code/gpm/checkpoints/CIFA100/Final_old5/10tasks_64batch___T_0.5_Global_0.0_local_1.0_lr_0.04_weak_False_Memory_False_Temp_0.5_Supcon_0.1/log.txt",
+# '0.6':"/home/|*|/Code/gpm/checkpoints/CIFA100/Final_old5/10tasks_64batch___T_0.6_Global_0.0_local_1.0_lr_0.04_weak_False_Memory_False_Temp_0.5_Supcon_0.1/log.txt",
+# '0.7':"/home/|*|/Code/gpm/checkpoints/CIFA100/Final_old5/10tasks_64batch___T_0.7_Global_0.0_local_1.0_lr_0.04_weak_False_Memory_False_Temp_0.5_Supcon_0.1/log.txt",
+# '0.8':"/home/|*|/Code/gpm/checkpoints/CIFA100/Final_old5/10tasks_64batch___T_0.8_Global_0.0_local_1.0_lr_0.04_weak_False_Memory_False_Temp_0.5_Supcon_0.1/log.txt",
+# '0.9':"/home/|*|/Code/gpm/checkpoints/CIFA100/Final_old5/10tasks_64batch___T_0.9_Global_0.0_local_1.0_lr_0.04_weak_False_Memory_False_Temp_0.5_Supcon_0.1/log.txt",
+# '1.0':"/home/|*|/Code/gpm/checkpoints/CIFA100/Final_old5/10tasks_64batch___T_1.0_Global_0.0_local_1.0_lr_0.04_weak_False_Memory_False_Temp_0.5_Supcon_0.1/log.txt"}
 # plt.rc('font', family='Times New Roman',weight='normal',size=15)
 # plt.figure(dpi=300)
 # ax = plt.gca()

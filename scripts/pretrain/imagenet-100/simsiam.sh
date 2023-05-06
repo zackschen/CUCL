@@ -1,8 +1,8 @@
 CUDA_VISIBLE_DEVICES=$1 python3 main_pretrain_CL.py \
     --dataset imagenet100 \
     --backbone resnet18 \
-    --train_data_path /mnt/hdd1/chencheng/cl_dataset/Imagenet100-kg/train \
-    --val_data_path /mnt/hdd1/chencheng/cl_dataset/Imagenet100-kg/val \
+    --train_data_path /mnt/hdd1/|*|/cl_dataset/Imagenet100-kg/train \
+    --val_data_path /mnt/hdd1/|*|/cl_dataset/Imagenet100-kg/val \
     --max_epochs 200 \
     --Task 10 \
     --devices 0,1 \

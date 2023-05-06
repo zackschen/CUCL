@@ -52,7 +52,7 @@ for i in range(Task_num):
         x+=width
 ax = plt.gca()
 ax.set_ybound([40,85])
-a.legend(['Simsiam w/ CUCL','Simsiam w/o CUCL'], loc='lower right')
+a.legend(['Simsiam w/ CUCL','Simsiam'], loc='lower right')
 xticks = list(range(0,10))
 labels = ["Task1","Task2","Task3"]
 xlabels=[str(x+1) for x in xticks]

@@ -1,8 +1,8 @@
 CUDA_VISIBLE_DEVICES=$1 python3 main_pretrain_CL.py \
     --dataset tinyimagenet \
     --backbone resnet18 \
-    --train_data_path /mnt/hdd1/chencheng/cl_dataset/Tinyimagenet/ \
-    --val_data_path /mnt/hdd1/chencheng/cl_dataset/Tinyimagenet/ \
+    --train_data_path /mnt/hdd1/|*|/cl_dataset/Tinyimagenet/ \
+    --val_data_path /mnt/hdd1/|*|/cl_dataset/Tinyimagenet/ \
     --max_epochs 50 \
     --Task 10 \
     --devices 0 \
