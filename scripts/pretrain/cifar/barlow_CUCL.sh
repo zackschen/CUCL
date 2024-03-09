@@ -1,8 +1,8 @@
 CUDA_VISIBLE_DEVICES=$1 python3 main_pretrain_CL.py \
     --dataset cifar100 \
     --backbone resnet18 \
-    --train_data_path /mnt/hdd1/|*|/cl_dataset/CIFAR100/ \
-    --val_data_path /mnt/hdd1/|*|/cl_dataset/CIFAR100/ \
+    --train_data_path /mnt/hdd1/chencheng/cl_dataset/CIFAR100/ \
+    --val_data_path /mnt/hdd1/chencheng/cl_dataset/CIFAR100/ \
     --max_epochs 200 \
     --Task 10 \
     --devices 0 \
@@ -22,7 +22,7 @@ CUDA_VISIBLE_DEVICES=$1 python3 main_pretrain_CL.py \
     --gaussian_prob 0 0 \
     --num_crops_per_aug 1 1 \
     --crop_size 32 \
-    --name barlow_CUCL_300  \
+    --name barlow_random_rehearsal  \
     --project 855-CIFAR \
     --entity zacks \
     --method barlow_twins \
@@ -39,7 +39,7 @@ CUDA_VISIBLE_DEVICES=$1 python3 main_pretrain_CL.py \
     --N_books 8 \
     --N_words 8 \
     --L_word 16 \
-    --sample_type Old \
+    --sample_type random \
     --CUCL_lr 0.03  \
     --CUCL_lambda 1.0 \
     # --train_from_task 1 \

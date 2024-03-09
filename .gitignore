@@ -1,5 +1,10 @@
 # tensorboard dir
 runs/
+.github/
+Draw/
+graph/
+tsne_codebook/
+.gitignore
 
 # wandb dir
 wandb/

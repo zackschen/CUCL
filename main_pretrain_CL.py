@@ -87,25 +87,6 @@ def main():
     if not args.no_channel_last:
         model = model.to(memory_format=torch.channels_last)
 
-    # validation dataloader for when it is available
-    # if args.dataset == "custom" and (args.no_labels or args.val_data_path is None):
-    #     val_loader = None
-    # elif args.dataset in ["imagenet100", "imagenet"] and (args.val_data_path is None):
-    #     val_loader = None
-    # else:
-    #     if args.data_format == "dali":
-    #         val_data_format = "image_folder"
-    #     else:
-    #         val_data_format = args.data_format
-
-    #     _, val_loader = prepare_data_classification(
-    #         args.dataset,
-    #         train_data_path=args.train_data_path,
-    #         val_data_path=args.val_data_path,
-    #         data_format=val_data_format,
-    #         batch_size=args.batch_size,
-    #         num_workers=args.num_workers,
-    #     )
 
     # pretrain dataloader
     if args.data_format == "dali":

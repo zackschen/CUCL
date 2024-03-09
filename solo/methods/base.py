@@ -28,7 +28,7 @@ from torch.utils.data.sampler import SubsetRandomSampler
 import numpy as np
 import pytorch_lightning as pl
 import torch
-import math
+import math, random
 import torch.nn as nn
 import torch.nn.functional as F
 import torchvision
@@ -550,7 +550,11 @@ class BaseMethod(pl.LightningModule):
         #     all_samples[1].append(images2_bank[sor_dis_notebook_bank[i]])
         #     all_samples[2].append(notaug_images_bank[sor_dis_notebook_bank[i]])
         #     all_samples[3].append(quant_idx_bank[sor_dis_notebook_bank[i]][:,i])
-        sor_dis_bank_index = sor_dis_bank[1][:self.extra_args["buffer_size"]]
+
+        if self.sample_type == "random":
+            sor_dis_bank_index = torch.randperm(dis_bank.shape[0])[:self.extra_args["buffer_size"]]
+        else:
+            sor_dis_bank_index = sor_dis_bank[1][:self.extra_args["buffer_size"]]
         images1_data = images1_bank[sor_dis_bank_index].numpy()
         images2_data = images2_bank[sor_dis_bank_index].numpy()
         notaug_images_data = notaug_images_bank[sor_dis_bank_index].numpy()

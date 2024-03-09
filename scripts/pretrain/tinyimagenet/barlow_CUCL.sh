@@ -1,8 +1,8 @@
 CUDA_VISIBLE_DEVICES=$1 python3 main_pretrain_CL.py \
     --dataset tinyimagenet \
     --backbone resnet18 \
-    --train_data_path /mnt/hdd1/|*|/cl_dataset/Tinyimagenet/ \
-    --val_data_path /mnt/hdd1/|*|/cl_dataset/Tinyimagenet/ \
+    --train_data_path /mnt/hdd1/chencheng/cl_dataset/Tinyimagenet/ \
+    --val_data_path /mnt/hdd1/chencheng/cl_dataset/Tinyimagenet/ \
     --max_epochs 200 \
     --Task 10 \
     --devices 0 \
@@ -22,7 +22,7 @@ CUDA_VISIBLE_DEVICES=$1 python3 main_pretrain_CL.py \
     --gaussian_prob 0 0 \
     --num_crops_per_aug 1 1 \
     --crop_size 64 \
-    --name barlow_CUCL_testp \
+    --name barlow_random \
     --project CUCL_855_Tiny \
     --entity zacks \
     --method barlow_twins \
@@ -39,7 +39,7 @@ CUDA_VISIBLE_DEVICES=$1 python3 main_pretrain_CL.py \
     --N_books 8 \
     --N_words 8 \
     --L_word 16 \
-    --sample_type Old \
+    --sample_type random \
     --CUCL_lr 0.03  \
     --CUCL_lambda 1.0 \
     # --load_first \
