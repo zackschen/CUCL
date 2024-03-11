@@ -22,9 +22,6 @@ CUDA_VISIBLE_DEVICES=$1 python3 main_pretrain_CL.py \
     --gaussian_prob 0 0 \
     --num_crops_per_aug 1 1 \
     --crop_size 32 \
-    --name simsiam_random_rehearsal \
-    --project CIFAR \
-    --entity zacks \
     --method simsiam \
     --knn_k 100 \
     --knn_temperature 0.1 \
@@ -33,26 +30,16 @@ CUDA_VISIBLE_DEVICES=$1 python3 main_pretrain_CL.py \
     --proj_hidden_dim 2048 \
     --pred_hidden_dim 512 \
     --proj_output_dim 512 \
-    --wandb \
     --CUCL \
+    --CUCL_lr 0.03  \
+    --CUCL_lambda 1.0 \
     --buffer_size $2 \
     --N_books 8 \
     --N_words 8 \
     --L_word 16 \
     --sample_type random \
-    --CUCL_lr 0.03  \
-    --CUCL_lambda 1.0 \
-    # --CUCL_for_Loss \
-    # --train_from_task 1 \
-    # --CUCL_loadPath ./checkpoints/cifar100_results/simsiam_CUCL_Forloss-2rzy5rdq \
-    # --train_task 1 \
-    # --CUCL_epoch 10 \
-    # --train_task 2 \
-    # --CUCL_for_Loss \
-    # --CUCL_type projector \
-    # --CUCL_cosine \
-    # --save_checkpoint \
-    # --zero_init_residual \
-    # --offline \
-    # --auto_resume \
+    # --wandb \
+    # --name simsiam_random_rehearsal \
+    # --project CIFAR \
+    # --entity zacks \
     

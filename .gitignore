@@ -4,7 +4,6 @@ runs/
 Draw/
 graph/
 tsne_codebook/
-.gitignore
 
 # wandb dir
 wandb/

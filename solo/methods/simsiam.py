@@ -68,7 +68,6 @@ class SimSiam(BaseMethod):
             nn.ReLU(),
             nn.Linear(pred_hidden_dim, proj_output_dim),
         )
-        # self.knn = WeightedKNNClassifier(k=kwargs['knn_k'], distance_fx=kwargs['knn_distance_function'])
 
         if self.LUMP:
             self.lump_buffer = Buffer(self.LUMP_size, self.device)
@@ -183,13 +182,6 @@ class SimSiam(BaseMethod):
         if not self.as_backbone:
             self.log_dict(metrics, on_epoch=True, sync_dist=True)
 
-        # if not self.trainer.sanity_checking:
-        #     targets = batch[-1].repeat(self.num_large_crops)
-        #     mask = targets != -1
-        #     self.knn(
-        #         train_features=torch.cat(out["feats"][: self.num_large_crops])[mask].detach(),
-        #         train_targets=targets[mask],
-        #     )
 
         return loss
 

@@ -465,7 +465,6 @@ class BaseMethod(pl.LightningModule):
         index_bank = []
         quanti_bank = []
 
-        # dis_notebook_bank = [[] for i in range(self.N_books)]
         if self.extra_args['data_format'] == "dali":
             for index, (images1, images2, notaug_images), target in tqdm(self.trainer.datamodule.train_dataloader()):
                 notaug_images = notaug_images.to(self.device, non_blocking=True)
@@ -530,27 +529,11 @@ class BaseMethod(pl.LightningModule):
         target_bank = torch.cat(target_bank, dim=0).contiguous()
         index_bank = torch.cat(index_bank, dim=0).contiguous()
         quanti_bank = torch.cat(quanti_bank, dim=0).contiguous()
-        # dis_notebook_bank = [torch.stack(array, dim=0).contiguous() for array in dis_notebook_bank]
 
         if self.sample_type == "Old":
             sor_dis_bank = torch.sort(dis_bank,dim=0,descending=True)
-            # sor_dis_notebook_bank = [torch.sort(array,dim=0,descending=True)[1][:self.extra_args["buffer_size"]] for array in dis_notebook_bank]
         else:
             sor_dis_bank = torch.sort(dis_bank,dim=0,descending=True)
-
-        # sor_dis_bank_index = sor_dis_bank[1][:self.extra_args["buffer_size"]]
-        # images1_data = images1_bank[sor_dis_bank_index].numpy()
-        # images2_data = images2_bank[sor_dis_bank_index].numpy()
-        # notaug_images_data = notaug_images_bank[sor_dis_bank_index].numpy()
-        # memory_quant_idx = quant_idx_bank[sor_dis_bank_index]
-
-        # all_samples = ([],[],[],[])
-        # for i in range(self.N_books):
-        #     all_samples[0].append(images1_bank[sor_dis_notebook_bank[i]])
-        #     all_samples[1].append(images2_bank[sor_dis_notebook_bank[i]])
-        #     all_samples[2].append(notaug_images_bank[sor_dis_notebook_bank[i]])
-        #     all_samples[3].append(quant_idx_bank[sor_dis_notebook_bank[i]][:,i])
-
         if self.sample_type == "random":
             sor_dis_bank_index = torch.randperm(dis_bank.shape[0])[:self.extra_args["buffer_size"]]
         else:
@@ -930,13 +913,6 @@ class BaseMethod(pl.LightningModule):
         Xb,Zb = self.quanti_Model(feature_2,self.curr_task)
         out["X_Feat"] = [Xa,Xb]
         out["Z_Feat"] = [Za,Zb]
-        # reg_a = F.mse_loss((Za ** 2).sum(-1), torch.ones(len(Za), device=Za.device))
-        # reg_b = F.mse_loss((Zb ** 2).sum(-1), torch.ones(len(Zb), device=Zb.device))
-        # reg = reg_a + reg_b
-        # metrics['reg'+f'_{self.curr_task}'] = reg
-
-        # if self.current_epoch == self.CUCL_epoch:
-        #     self.CodeWord_Feature.append(Xa)
 
         quanti_loss = 0.0
         sample_loss = 0.0
@@ -972,26 +948,6 @@ class BaseMethod(pl.LightningModule):
                 self.target_idxs = torch.cat(target_idxs,dim=0).contiguous()
                 self.index_idxs = torch.cat(index_idxs,dim=0).contiguous()
                 self.quanti_feats = torch.cat(quanti_feats,dim=0).contiguous()
-
-            # if self.sample_type == "Old":
-            #     # kld_loss = nn.KLDivLoss(reduce="batchmean")
-            #     # T = 2
-            #     for t in range(self.curr_task):
-            #         quant_idx,feature,Quanti_Feature = self.foward_CUCL(self.notaug_inputs[t*self.buffer_size:(t+1)*self.buffer_size],t)
-            #         # sample_loss += F.pairwise_distance(Quanti_Feature, self.quanti_feats[t*self.buffer_size:(t+1)*self.buffer_size]).mean()
-            #         # sample_loss += kld_loss(F.log_softmax(Quanti_Feature/T,dim=1),F.softmax(self.quanti_feats[t*self.buffer_size:(t+1)*self.buffer_size].detach()/T,dim=1))
-            #         # q1 = F.softmax(self.quanti_feats[t*self.buffer_size:(t+1)*self.buffer_size]/T,dim=1)
-            #         # q2 = F.log_softmax(Quanti_Feature/T,dim=1)
-            #         # sample_loss += -torch.mean(torch.sum(q1 * q2, dim=1))
-            #         c = self.quanti_Model.C[t]
-            #         x = torch.split(Quanti_Feature, self.L_word, 1)
-            #         for code_i in range(self.N_books):
-            #             sample_loss += F.pairwise_distance(x[code_i], c[code_i][self.quant_idxs[t*self.buffer_size:(t+1)*self.buffer_size,code_i],:]).mean() 
-            # else:
-            #     for t in range(self.curr_task):
-            #         quant_idx,_,Quanti_Feature_1 = self.foward_CUCL(self.inputs1[t*self.buffer_size:(t+1)*self.buffer_size],t)
-            #         quant_idx,_,Quanti_Feature_2 = self.foward_CUCL(self.inputs2[t*self.buffer_size:(t+1)*self.buffer_size],t)
-            #         sample_loss += F.pairwise_distance(Quanti_Feature_1, Quanti_Feature_2).mean()
 
             outputs1 = self.base_training_step(self.inputs1,self.target_idxs)
             outputs2 = self.base_training_step(self.inputs2,self.target_idxs)
@@ -1072,46 +1028,12 @@ class BaseMethod(pl.LightningModule):
                 diss = - torch.log(n * distances).mean()
                 cosine_loss += diss*0.01
 
-                # id_list = torch.sort(torch.bincount(quant_idxa[:,i]),descending=True)[1].tolist()
-                # dis_all = 0
-                # for j in id_list:
-                #     index = torch.where(quant_idxa[:,i] == j)[0]
-                #     if len(index) > 1:
-                #         Zb_i = Za_s[i][index]
-                #         dis = self.distance(Zb_i, Zb_i)
-                #         dis.view(-1)[::(dis.shape[0]+1)].fill_(float('-inf'))
-                #         dis_all += dis.max()
-                # cosine_loss += dis_all*0.05
-                # cosine_loss = max(0,cosine_loss)
-            # if self.curr_task > 0:
-            #     index_a = self.indexing(self.quanti_Model.C[self.curr_task],Xa)
-            #     for i in range(self.N_books):
-            #         for t in range(self.curr_task):
-            #             previous = self.codeword_dict[t][i]
-            #             dis = self.distance(self.quanti_Model.C[t][i][previous].detach(), \
-            #                     self.quanti_Model.C[self.curr_task][i][index_a[:,i].unique(),:]).min()
-            #             dis = - torch.log(dis)
-            #             cosine_loss += max(0,dis)
             if cosine_loss > 0.0:
                 metrics['cosine_loss'+f'_{self.curr_task}'] = cosine_loss
         # print(f'cosine_loss:{cosine_loss}')
         out["cosine_loss"] = cosine_loss
         out["quanti_loss"] = quanti_loss
         out["sample_loss"] = sample_loss
-
-    # def on_train_epoch_end(self):
-    #     if self.CUCL and self.current_epoch == self.CUCL_epoch:
-    #         print('Change CodeWord')
-    #         self.CodeWord_Feature = torch.cat(self.CodeWord_Feature,dim=0).contiguous()
-    #         CodeWord_Feature_Split = torch.split(self.CodeWord_Feature, self.L_word, dim=1)
-    #         for i in range(self.N_books):
-    #             kmeans = KMeans(n_clusters=self.N_words, random_state=0).fit(CodeWord_Feature_Split[i].detach().cpu().numpy())
-    #             self.quanti_Model.C[self.curr_task][i].data = torch.from_numpy(kmeans.cluster_centers_).to(self.device,non_blocking=True)
-    #         self.CodeWord_Feature = []
-    #    if self.CUCL:
-    #        for i in range(self.N_books):
-    #            for j in range(self.N_words):
-    #                self.quanti_Model.C[self.curr_task][i][j].data = F.normalize(self.quanti_Model.C[self.curr_task][i][j].data,dim=0)
 
 class BaseMomentumMethod(BaseMethod):
     def __init__(

@@ -239,27 +239,6 @@ def main():
                 train_dataset.targets = np.array(train_dataset.targets)[train_mask]
             train_loader = prepare_dataloader(train_dataset, batch_size=args.batch_size, num_workers=args.num_workers)
 
-            # _, T = prepare_transforms_classification(args.dataset)
-            # _, val_dataset = prepare_datasets_classification(
-            #     args.dataset,
-            #     T_train=T,
-            #     T_val=T,
-            #     train_data_path=args.train_data_path,
-            #     val_data_path=args.val_data_path,
-            #     data_format=args.data_format,
-            # )
-            # test_mask = np.logical_and(np.array(val_dataset.targets) >= order*class_per_task,
-            # np.array(val_dataset.targets) < (order+1)*class_per_task)
-            # if args.dataset == 'imagenet100':
-            #     val_dataset.samples = np.array(val_dataset.samples)[test_mask]
-            #     val_dataset.imgs = np.array(val_dataset.imgs)[test_mask]
-            #     val_dataset.targets = np.array(val_dataset.targets)[test_mask]
-            # else:
-            #     val_dataset.data = np.array(val_dataset.data)[test_mask]
-            #     val_dataset.targets = np.array(val_dataset.targets)[test_mask]
-
-            # val_loader = DataLoader(val_dataset, batch_size=args.batch_size, shuffle=False, num_workers=args.num_workers, pin_memory=True,drop_last=False,)
-
             if train:
                 print(f'Training on task {i} samples {order}')
                 model.train_loader = train_loader
@@ -341,10 +320,6 @@ def test_model(args,model,task_id, sample_orders,N_CLASSES_PER_TASK, acc_matrix,
         if args.dataset == 'imagenet100':
             train_targets  = train_targets - order*N_CLASSES_PER_TASK
             test_targets  = test_targets - order*N_CLASSES_PER_TASK
-
-        # plot_codebook(model,test_features['backbone'],test_targets.cpu().numpy(),args,task_id)
-        # save_codeword_samples(args, model, val_loader, task_id)
-        # count_class_Codeword(args, model, train_loader, task_id)
 
         # run k-nn for all possible combinations of parameters
         feat_type = args.knn_feature_type
@@ -448,69 +423,6 @@ def evaluate(args,model,task_id, sample_orders,N_CLASSES_PER_TASK, acc_matrix, w
     wandb_logger.log_table("AA"+str(task_id), columns=[("Task" + str(i)) for i in range(model.task_num)], data=acc_matrix)
 
 @torch.no_grad()
-def save_codeword_samples(args, model, test_loader, task_id):
-    quant_idx_bank = []
-    data_bank = []
-    for im, lab in tqdm(test_loader):
-        im = im.cuda(non_blocking=True)
-        lab = lab.cuda(non_blocking=True)
-        quant_idx,Xa,Za = model.foward_CUCL(im,task_id)
-        data_bank.append(im)
-        quant_idx_bank.append(quant_idx.cpu())
-    data_bank = torch.cat(data_bank,dim=0).contiguous()
-    quant_idx_bank = torch.cat(quant_idx_bank,dim=0).contiguous()
-
-    for i in range(model.N_books):
-        # Za_sn = F.normalize(Za_s[i],p=2,dim=1)
-        # dots = torch.mm(Za_sn.data, Za_sn.data.t())
-        # n = Za_sn.data.shape[0]
-        # dots.view(-1)[::(n+1)].fill_(-1)  # Trick to fill diagonal with -1
-        # _, I = torch.max(dots, 1)  # max inner prod -> min distance
-        # distances = F.pairwise_distance(Za_sn, Za_sn[I])
-        # dis = - torch.log(n * distances).mean()
-        path = './code_images/{}/{}'.format(args.name,i)
-        id_list = torch.sort(torch.bincount(quant_idx_bank[:,i]),descending=True)[1].tolist()
-        for j in id_list:
-            path_j = os.path.join(path,f'{j}')
-            os.makedirs(path_j,exist_ok=True)
-            index = torch.where(quant_idx_bank[:,i] == j)[0]
-            images = data_bank[index]
-            for k,image in enumerate(images):
-                pil_image = transform_convert(image.cpu(),test_loader.dataset.transform)
-                pil_image.save(os.path.join(path_j,f'{index[k]}.png'))
-            
-
-
-from PIL import Image
-def transform_convert(img_tensor, transform):
-    """
-    param img_tensor: tensor
-    param transforms: torchvision.transforms
-    """
-    if 'Normalize' in str(transform):
-        normal_transform = list(filter(lambda x: isinstance(x, T.Normalize), transform.transforms))
-        mean = torch.tensor(normal_transform[0].mean, dtype=img_tensor.dtype, device=img_tensor.device)
-        std = torch.tensor(normal_transform[0].std, dtype=img_tensor.dtype, device=img_tensor.device)
-        img_tensor.mul_(std[:, None, None]).add_(mean[:, None, None])
- 
-    # C x H x W  ---> H x W x C
-    img_tensor = img_tensor.transpose(0, 2).transpose(0, 1)
- 
-    if 'ToTensor' in str(transform) or img_tensor.max() < 1:
-        img_tensor = img_tensor.detach().numpy() * 255
- 
-    if isinstance(img_tensor, torch.Tensor):
-        img_tensor = img_tensor.numpy()
- 
-    if img_tensor.shape[2] == 3:
-        img = Image.fromarray(img_tensor.astype('uint8')).convert('RGB')
-    elif img_tensor.shape[2] == 1:
-        img = Image.fromarray(img_tensor.astype('uint8')).squeeze()
-    else:
-        raise Exception("Invalid img shape, expected 1 or 3 in axis 2, but got {}!".format(img_tensor.shape[2]))
-    return img
-
-@torch.no_grad()
 def calculate_Codeword(args, net, train_loader, task_id):
     net.eval()
     Quant_idx_bank = []
@@ -532,53 +444,6 @@ def calculate_Codeword(args, net, train_loader, task_id):
         for task, dict in net.codeword_dict.items():
             print('Task: {}, Codeword: {}'.format(task,dict))
 
-@torch.no_grad()
-def count_class_Codeword(args, net, train_loader, task_id):
-    net.eval()
-    Quant_idx_bank = []
-    targets = []
-    with torch.no_grad():
-        for im, lab in tqdm(train_loader):
-            quant_idx,Feature,_ = net.foward_CUCL(im.cuda(non_blocking=True),task_id)
-            Quant_idx_bank.append(quant_idx)
-            targets.append(lab)
-        Quant_idx_bank = torch.cat(Quant_idx_bank, dim=0).contiguous()
-        targets = torch.cat(targets, dim=0).contiguous()
-        print('='*20)
-        dict = {}
-        for i in targets.unique():
-            print('Class: {} '.format(i))
-            subdict = {}
-            index = torch.where(targets == i)
-            quant_idxs = Quant_idx_bank[index]
-            for j in range(net.N_books):
-                print('CodeBook: {} '.format(j))
-                id_list = torch.sort(torch.bincount(quant_idxs[:,j]),descending=True)
-                list1 = id_list[1].tolist()
-                list0 = id_list[0].tolist()
-                print(list1)
-                print(list0)
-                for k in range(len(list1)):
-                    subdict[list1[k]] = list0[k]
-                print()
-            dict[i.item()] = subdict
-        print('='*20)
-        print(dict)
-        df = pd.DataFrame(dict)
-        print(df)
-        print('='*20)
-        dict = {}
-        for i in range(net.N_books):
-            print('Codebook: {} '.format(i))
-            quantis = Quant_idx_bank[:,i]
-            for j in range(net.N_words):
-                print('Codeword: {} '.format(j))
-                index = torch.where(quantis == j)
-                target = targets[index]
-                id_list = torch.sort(torch.bincount(target),descending=True)
-                print(id_list[1].tolist())
-                print(id_list[0].tolist())
-                print()
 
 if __name__ == "__main__":
     main()
